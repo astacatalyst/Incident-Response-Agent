@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     hindsight_api_key: str | None = Field(default=None, validation_alias="HINDSIGHT_API_KEY")
     hindsight_bank_id: str | None = Field(default=None, validation_alias="HINDSIGHT_BANK_ID")
     groq_api_key: str | None = Field(default=None, validation_alias="GROQ_API_KEY")
-    groq_model: str = Field(default="llama-3.3-70b-versatile", validation_alias="GROQ_MODEL")
+    groq_model: str = Field(default="openai/gpt-oss-120b", validation_alias="GROQ_MODEL")
     database_url: str = Field(default="sqlite:///./incidentiq.db", validation_alias="DATABASE_URL")
     cors_origins: str = Field(default="http://localhost:5173", validation_alias="CORS_ORIGINS")
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
