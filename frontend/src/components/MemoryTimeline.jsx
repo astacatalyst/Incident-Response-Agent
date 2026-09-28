@@ -1,21 +1,13 @@
 function MemoryTimeline({ incidents }) {
   return (
-    <div>
+    <div className="card">
       <h2>Memory: Similar Past Incidents</h2>
       {incidents.map((incident) => (
-        <div
-          key={incident.id}
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            padding: "12px",
-            marginBottom: "10px",
-          }}
-        >
+        <div className="memory-card" key={incident.id}>
           <strong>
             {incident.id} · {incident.service}
           </strong>
-          <p>Recalled from {incident.date}</p>
+          <span className="badge">Recalled from {incident.date}</span>
           <p>Root cause: {incident.rootCause}</p>
           <p>Fix: {incident.resolution}</p>
           <p>Resolved in {incident.timeToResolve}</p>
