@@ -1,3 +1,5 @@
+import MemoryTimeline from "./MemoryTimeline";
+
 function AgentResponse({ response }) {
   return (
     <div>
@@ -11,7 +13,7 @@ function AgentResponse({ response }) {
         ))}
       </ol>
 
-      <p>Based on {response.recalledCount} similar past incidents.</p>
+      <MemoryTimeline incidents={response.recalledIncidents} />
     </div>
   );
 }
