@@ -1,58 +1,48 @@
-from datetime import datetime, timedelta, timezone
+"""Seed data: 25 real, publicly documented production incidents.
+
+Each record is summarised from the company's published postmortem (URL kept in
+metrics["source"]). Log lines are reconstructed from the report text, since raw
+logs are not public. Durations are approximate, taken from the reports.
+"""
+
+import json
+from datetime import datetime, timedelta
+from pathlib import Path
+
+DATA_FILE = Path(__file__).with_name("real_incidents.json")
 
 
-def synthetic_incidents() -> list[dict]:
-    """Realistic, explicitly synthetic incidents for local development."""
-    scenarios = [
-        ("payment-api", "critical", ["latency above 9 seconds", "database CPU above 95%", "error rate 17%"], "2026-09-01T09:15:00+00:00", {"db_cpu": 96, "latency_ms": 9200, "error_rate": 17}, "v2.4.1", "Payment requests time out during peak traffic.", "query timeout waiting for connection; statement exceeded 8000ms", "Missing composite index on transactions.user_id", "Added composite index and analyzed the table", True, 37, "Check transaction indexes when payment latency and database CPU rise together."),
-        ("payment-api", "high", ["checkout latency above 4 seconds", "deadlocks increased"], "2026-09-03T11:40:00+00:00", {"db_cpu": 88, "latency_ms": 4300, "deadlocks": 12}, "v2.4.2", "Checkout intermittently fails.", "deadlock detected on relation transactions", "Long-running migration held locks during traffic", "Cancelled migration and rescheduled it with an online index", True, 24, "Run schema changes online and watch lock waits."),
-        ("auth-service", "critical", ["login failures", "token validation errors"], "2026-09-04T06:20:00+00:00", {"error_rate": 42, "jwks_age_minutes": 95, "latency_ms": 180}, "v5.1.0", "Users cannot sign in after a key rotation.", "kid abc123 not found in JWKS cache", "JWKS cache did not refresh after key rotation", "Forced JWKS refresh and reduced cache TTL", True, 18, "Verify key rotation propagation before declaring auth recovery."),
-        ("auth-service", "high", ["OAuth callback errors", "session creation failures"], "2026-09-05T14:10:00+00:00", {"error_rate": 28, "callback_latency_ms": 1200, "redis_memory_pct": 91}, "v5.1.1", "OAuth sign-in returns an internal error.", "redis OOM command rejected; session write failed", "Redis maxmemory policy was incompatible with session keys", "Changed eviction policy and removed stale sessions", True, 31, "Session stores need explicit capacity and eviction monitoring."),
-        ("order-service", "high", ["p95 latency increased", "queue backlog"], "2026-09-06T08:05:00+00:00", {"latency_ms": 5100, "queue_depth": 18400, "cpu_pct": 79}, "v3.8.0", "New orders remain pending.", "consumer lag exceeded 900s for order-events", "A deployment reduced Kafka consumer concurrency", "Restored concurrency and replayed the delayed partition", True, 52, "Compare consumer concurrency and partition ownership after deployments."),
-        ("order-service", "medium", ["duplicate order notifications", "retry volume high"], "2026-09-07T16:30:00+00:00", {"retry_rate": 14, "duplicate_events": 326, "latency_ms": 880}, "v3.8.1", "Some orders generate duplicate fulfillment events.", "event already processed but idempotency insert was skipped", "Idempotency key column was missing from one replica", "Applied schema change to all replicas and rebuilt the constraint", True, 63, "Check schema parity across replicas before enabling traffic."),
-        ("user-service", "high", ["profile reads return 503", "connection pool exhausted"], "2026-09-08T10:55:00+00:00", {"error_rate": 11, "pool_in_use": 100, "db_cpu": 74}, "v4.2.3", "Profile pages fail intermittently.", "sqlalchemy pool timeout after 30 seconds", "Connection leak in avatar metadata query", "Deployed connection cleanup and drained old pods", True, 44, "Pool exhaustion warrants checking unclosed cursors before scaling."),
-        ("user-service", "low", ["cache hit rate dropped", "profile reads slower"], "2026-09-09T12:15:00+00:00", {"cache_hit_pct": 41, "latency_ms": 640, "redis_memory_pct": 68}, "v4.2.4", "Profile reads are slow but successful.", "cache miss for user_profile:* after serializer change", "Cache key format changed without a dual-read period", "Added a compatible read path and warmed popular keys", True, 75, "Treat cache key changes as compatibility migrations."),
-        ("notification-service", "critical", ["email delivery stopped", "provider 429 responses"], "2026-09-10T07:45:00+00:00", {"provider_429_rate": 63, "queue_depth": 9200, "delivery_pct": 18}, "v1.9.0", "Transactional emails are delayed.", "provider rate limit exceeded for account", "A retry policy ignored provider Retry-After headers", "Honored backoff headers and throttled workers", True, 29, "External provider retries must respect server-provided backoff."),
-        ("notification-service", "high", ["push notifications delayed", "worker restarts"], "2026-09-11T19:22:00+00:00", {"queue_depth": 5100, "restart_count": 17, "memory_pct": 94}, "v1.9.1", "Push notifications arrive several minutes late.", "worker killed by cgroup memory limit", "Batch size grew without a memory bound", "Capped batch size and increased visibility timeout", True, 46, "Bound batch memory independently from queue throughput."),
-        ("inventory-service", "critical", ["stock counts stale", "write errors"], "2026-09-12T05:35:00+00:00", {"replication_lag_s": 318, "write_error_rate": 22, "db_cpu": 91}, "v6.0.0", "Inventory availability is incorrect.", "replica lag exceeded read-after-write window", "A cross-region replica was promoted with delayed WAL", "Routed writes to primary and rebuilt the lagging replica", True, 88, "Availability reads must account for replication lag during failover."),
-        ("inventory-service", "high", ["reservation requests fail", "lock waits"], "2026-09-13T09:05:00+00:00", {"lock_wait_ms": 4200, "error_rate": 9, "latency_ms": 4700}, "v6.0.1", "Items cannot be reserved reliably.", "lock wait timeout on inventory_reservations", "Reservation cleanup job scanned the table without an index", "Added cleanup index and limited batch size", True, 41, "Background cleanup queries need the same indexing review as user traffic."),
-        ("catalog-service", "medium", ["search results incomplete", "indexing backlog"], "2026-09-14T15:40:00+00:00", {"index_lag_s": 740, "queue_depth": 2800, "search_zero_result_pct": 19}, "v2.2.0", "Recently updated products do not appear in search.", "bulk indexer rejected documents with malformed dimensions", "One product feed contained an unexpected null dimension", "Quarantined bad records and replayed the feed", True, 67, "Quarantine malformed feed records without blocking the full index."),
-        ("catalog-service", "high", ["catalog API latency", "CPU saturation"], "2026-09-15T03:10:00+00:00", {"cpu_pct": 98, "latency_ms": 6800, "requests_per_second": 410}, "v2.2.1", "Catalog requests time out during a campaign.", "worker pool saturated while rendering unbounded facets", "Facet query lacked a result limit", "Added facet bounds and temporarily disabled the expensive field", True, 36, "Bound user-controlled query expansion before campaigns."),
-        ("checkout-service", "critical", ["payment confirmation missing", "webhook backlog"], "2026-09-16T13:55:00+00:00", {"webhook_lag_s": 1200, "queue_depth": 14000, "error_rate": 7}, "v7.3.0", "Paid orders are not marked complete.", "webhook consumer lost lease and stopped acknowledging messages", "A clock skew caused lease renewal failures", "Corrected node time sync and replayed the queue", True, 54, "Monitor node clock offset for lease-based consumers."),
-        ("checkout-service", "high", ["cart totals inconsistent", "tax calculation errors"], "2026-09-17T11:25:00+00:00", {"tax_error_rate": 8, "latency_ms": 1800, "cpu_pct": 64}, "v7.3.1", "Some carts show stale tax totals.", "tax rules cache served an expired jurisdiction version", "Cache invalidation was not triggered by tax rule publish", "Invalidated affected jurisdictions and fixed publish hooks", True, 39, "Configuration publishes need explicit cache invalidation events."),
-        ("redis-cluster", "critical", ["cache unavailable", "connection refused"], "2026-09-18T02:48:00+00:00", {"memory_pct": 99, "evicted_keys": 84000, "connections": 12000}, "redis-7.2.5", "Multiple APIs report cache failures.", "maxmemory reached; replicas failed promotion health checks", "Large unbounded session values exhausted the shard", "Removed oversized values and resharded the cluster", True, 72, "Alert on value size and shard headroom, not just aggregate memory."),
-        ("search-service", "high", ["search timeout", "merge queue blocked"], "2026-09-19T17:12:00+00:00", {"latency_ms": 11200, "merge_queue": 37, "heap_pct": 93}, "v3.4.0", "Product searches time out.", "segment merge stalled while heap approached the limit", "A large reindex ran with production search traffic", "Paused reindex, increased heap headroom, and resumed off-peak", True, 95, "Schedule large reindexes away from peak traffic."),
-        ("kubernetes-platform", "critical", ["pods pending", "unschedulable nodes"], "2026-09-20T04:35:00+00:00", {"pending_pods": 84, "node_cpu_pct": 96, "scheduler_latency_ms": 9000}, "cluster-1.28.4", "Deployments cannot obtain capacity.", "0/24 nodes available: insufficient cpu", "A batch workload omitted resource limits and consumed cluster capacity", "Applied limits and scaled the node group", True, 61, "Require resource requests and limits for batch workloads."),
-        ("kubernetes-platform", "high", ["pods crashlooping", "readiness probes fail"], "2026-09-21T08:15:00+00:00", {"restart_count": 266, "ready_pct": 42, "probe_latency_ms": 3200}, "cluster-1.28.5", "A service rollout is unstable.", "readiness probe timeout exceeded during cold start", "The image grew and initialization exceeded the old probe budget", "Adjusted startup probe and reduced image size", True, 48, "Use startup probes for slow initialization instead of widening readiness blindly."),
-        ("gateway", "critical", ["gateway 502 rate high", "upstream timeout"], "2026-09-22T14:00:00+00:00", {"error_rate": 31, "latency_ms": 15000, "upstream_timeout_pct": 26}, "v10.5.2", "Requests fail at the edge.", "upstream timed out after gateway idle timeout", "A backend timeout increase was not reflected in gateway config", "Aligned timeout budgets and rolled the gateway config", True, 33, "Keep timeout budgets consistent across every proxy hop."),
-        ("gateway", "medium", ["TLS handshake errors", "regional failures"], "2026-09-23T21:05:00+00:00", {"tls_error_rate": 6, "handshake_ms": 2100, "affected_regions": 2}, "v10.5.3", "Some regions cannot establish TLS.", "certificate chain rejected by older edge nodes", "Certificate rollout left two edge pools on an old trust bundle", "Completed trust bundle rollout and drained stale nodes", True, 57, "Verify certificate chains across all edge pools after rotation."),
-        ("analytics-worker", "high", ["ETL jobs stuck", "warehouse load high"], "2026-09-24T06:50:00+00:00", {"job_lag_minutes": 145, "warehouse_cpu": 97, "active_queries": 188}, "v8.1.0", "Daily reports are missing fresh data.", "warehouse queue time exceeded worker lease duration", "A backfill ran without workload priority controls", "Paused backfill and assigned ETL a dedicated warehouse queue", True, 82, "Separate backfills from operational reporting workloads."),
-        ("file-service", "high", ["uploads fail", "disk usage alert"], "2026-09-25T10:45:00+00:00", {"disk_pct": 98, "upload_error_rate": 34, "cleanup_age_days": 45}, "v2.8.1", "File uploads fail intermittently.", "no space left on device while creating multipart chunks", "Cleanup worker stopped after a permissions change", "Fixed permissions and removed expired temporary chunks", True, 26, "Monitor cleanup worker health and temporary storage separately."),
-        ("billing-service", "critical", ["invoice generation delayed", "database CPU spike"], "2026-09-26T18:35:00+00:00", {"db_cpu": 94, "invoice_queue": 6200, "latency_ms": 7800}, "v4.6.0", "Invoices are not generated before the billing cutoff.", "invoice query scanned all customer line items", "A query plan regressed after statistics became stale", "Refreshed statistics and added a covering index", True, 64, "Track query-plan regressions after large data changes."),
-        ("shipping-service", "medium", ["carrier labels delayed", "third-party 503s"], "2026-09-27T12:00:00+00:00", {"carrier_503_rate": 22, "queue_depth": 1900, "latency_ms": 5600}, "v5.4.2", "Label generation is delayed.", "carrier API returned transient 503 responses", "Retry budget was too low for a carrier outage window", "Added bounded exponential backoff and a carrier circuit breaker", True, 49, "Use bounded retries and circuit breakers for carrier dependencies."),
-    ]
-    base = datetime(2026, 9, 1, tzinfo=timezone.utc)
+def real_incidents() -> list[dict]:
+    rows = json.loads(DATA_FILE.read_text(encoding="utf-8"))
     records = []
-    for index, scenario in enumerate(scenarios):
-        service, severity, symptoms, timestamp, metrics, version, description, logs, root_cause, resolution, successful, duration, lessons = scenario
+    for r in rows:
+        created = datetime.fromisoformat(r["date"].replace("Z", "+00:00"))
+        logs = "\n".join(
+            [f"[reconstructed from public postmortem: {r['source']}]"]
+            + [f"ALERT {r['service']}: {s}" for s in r["symptoms"]]
+        )
         records.append(
             {
-                "service": service,
-                "severity": severity,
-                "symptoms": symptoms,
+                "service": r["service"],
+                "severity": r["severity"],
+                "symptoms": r["symptoms"],
                 "logs": logs,
-                "metrics": metrics,
-                "deployment_version": version,
-                "description": description,
+                "metrics": {"company": r["company"], "source": r["source"]},
+                "deployment_version": "public-postmortem",
+                "description": f"{r['company']}: {r['description']}",
                 "status": "resolved",
-                "root_cause": root_cause,
-                "resolution": resolution,
-                "successful": successful,
-                "resolution_time_minutes": duration,
-                "lessons_learned": lessons,
-                "is_synthetic": True,
-                "created_at": datetime.fromisoformat(timestamp),
-                "resolved_at": datetime.fromisoformat(timestamp) + timedelta(minutes=duration),
+                "root_cause": r["root_cause"],
+                "resolution": r["resolution"],
+                "successful": True,
+                "resolution_time_minutes": r["minutes"],
+                "lessons_learned": r["lessons"],
+                "is_synthetic": True,  # marks seed data; content itself is real
+                "created_at": created,
+                "resolved_at": created + timedelta(minutes=r["minutes"]),
             }
         )
     return records
+
+
+# Backwards-compatible name used by seeding scripts.
+synthetic_incidents = real_incidents

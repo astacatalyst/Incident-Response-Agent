@@ -81,7 +81,7 @@ function HistoryView() {
                 <strong>#{i.id} · {i.service}</strong>
                 <span className={`badge sev-${i.severity}`}>{i.severity}</span>
                 <span className="badge">{i.status}</span>
-                {i.is_synthetic && <span className="badge">seed</span>}
+                {i.is_synthetic && <span className="badge">public postmortem</span>}
                 <span className="muted right">{formatDate(i.created_at)}</span>
               </button>
               <p>{i.description}</p>

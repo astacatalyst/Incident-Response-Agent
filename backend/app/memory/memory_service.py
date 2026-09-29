@@ -30,7 +30,7 @@ def build_retained_memory(incident: Incident) -> str:
             "successful": incident.successful,
             "resolution_time_minutes": incident.resolution_time_minutes,
             "lessons_learned": incident.lessons_learned,
-            "source": "IncidentIQ synthetic development data"
+            "source": "Public postmortem (seed data)"
             if incident.is_synthetic
             else "IncidentIQ engineer-resolved incident",
         },

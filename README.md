@@ -48,7 +48,7 @@ Live demo: https://incident-response-agent-puce.vercel.app/
 
 - **Backend (Render):** New → Blueprint → this repo (uses `render.yaml`). Set
   `HINDSIGHT_API_URL`, `HINDSIGHT_API_KEY`, `HINDSIGHT_BANK_ID`, `GROQ_API_KEY`.
-  The container seeds 25 synthetic incidents into SQLite on start. Run
+  The container seeds 25 real public-postmortem incidents into SQLite on start. Run
   `python -m scripts.seed_hindsight` once (Render Shell) to load them into Hindsight.
 - **Frontend (Vercel):** root `frontend/`, env `VITE_API_URL=<render URL>`.
 
@@ -117,7 +117,7 @@ Interactive API documentation is available at `/docs`; ReDoc is available at
 
 ## Synthetic development data
 
-The seed data is explicitly synthetic and does not represent a real company.
+The seed data is 25 real, publicly documented outages (AWS, Cloudflare, GitHub, GitLab, Meta, CrowdStrike and more), summarised from each company's published postmortem. Source links are kept on every record; log lines are reconstructed from the report text.
 It contains 25 realistic resolved incidents across databases, APIs, Redis,
 deployments, Kubernetes, networks, authentication, payments, and workers.
 
