@@ -1,16 +1,24 @@
-function MemoryTimeline({ incidents }) {
+function MemoryTimeline({ memory, similar }) {
   return (
     <div className="card">
-      <h2>Memory: Similar Past Incidents</h2>
-      {incidents.map((incident) => (
-        <div className="memory-card" key={incident.id}>
-          <strong>
-            {incident.id} · {incident.service}
-          </strong>
-          <span className="badge">Recalled from {incident.date}</span>
-          <p>Root cause: {incident.rootCause}</p>
-          <p>Fix: {incident.resolution}</p>
-          <p>Resolved in {incident.timeToResolve}</p>
+      <h2>Memory: recalled from Hindsight</h2>
+      <p className="muted">
+        Status: {memory.status} · {memory.memories_retrieved} memories retrieved
+        {memory.error && ` · ${memory.error}`}
+      </p>
+      {!memory.memory_used && <p>No relevant past incidents yet — this analysis is generic.</p>}
+
+      {similar.map((s) => (
+        <div className="memory-card" key={s.incident_id}>
+          <strong>Similar incident {s.incident_id}</strong>
+          <p>{s.reason}</p>
+        </div>
+      ))}
+
+      {memory.memories.map((m, i) => (
+        <div className="memory-card" key={m.id || i}>
+          {m.type && <span className="badge">{m.type}</span>}
+          <p>{m.content}</p>
         </div>
       ))}
     </div>

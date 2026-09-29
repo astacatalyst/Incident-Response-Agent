@@ -1,38 +1,55 @@
-import { useState } from "react";
+import "./states.css";
+import { useEffect, useState } from "react";
 import IncidentInput from "./components/IncidentInput";
 import AgentResponse from "./components/AgentResponse";
-import { mockResponse } from "./mockdata";
+import ResolveForm from "./components/ResolveForm";
+import { analyzeIncident, getHealth } from "./lib/api";
 
 function App() {
-  const [response, setResponse] = useState(null);
+  const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [health, setHealth] = useState(null);
 
-  function handleSubmit(log) {
-    console.log("Log received:", log);
-    setResponse(null);
+  useEffect(() => {
+    getHealth().then(setHealth).catch(() => setHealth({ status: "offline" }));
+  }, []);
+
+  async function handleSubmit(payload) {
+    setResult(null);
+    setError("");
     setIsLoading(true);
-
-    // Fake a 1.5 second delay, like a real API call
-    setTimeout(() => {
-      setResponse(mockResponse);
+    try {
+      setResult(await analyzeIncident(payload));
+    } catch (e) {
+      setError(e.message);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   }
 
   return (
     <div className="app">
       <h1>Incident Response Agent</h1>
-      <p className="subtitle">
-        An on-call assistant that remembers every past incident.
-      </p>
+      <p className="subtitle">An on-call assistant that remembers every past incident.</p>
+      {health && (
+        <p className={`status status-${health.status}`}>
+          Backend: {health.status}
+          {health.hindsight && ` · Memory: ${health.hindsight} · LLM: ${health.llm}`}
+        </p>
+      )}
 
       <IncidentInput onSubmit={handleSubmit} isLoading={isLoading} />
 
-      {isLoading && (
-        <div className="loading">Searching memory for similar incidents...</div>
-      )}
+      {isLoading && <div className="loading">Searching memory for similar incidents...</div>}
+      {error && <div className="error">{error}</div>}
 
-      {response && <AgentResponse response={response} />}
+      {result && (
+        <>
+          <AgentResponse result={result} />
+          <ResolveForm incident={result.incident} />
+        </>
+      )}
     </div>
   );
 }

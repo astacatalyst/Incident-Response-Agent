@@ -1,0 +1,8 @@
+label { display: block; margin: 8px 0; font-size: 14px; color: #94a3b8; }
+label input, label select, label textarea { display: block; width: 100%; margin-top: 4px; padding: 8px; font: inherit; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; }
+.error { border: 1px solid #f87171; background: rgba(248, 113, 113, 0.1); color: #fecaca; padding: 12px; border-radius: 8px; margin: 12px 0; }
+.success { border-color: #34d399; }
+.muted { color: #94a3b8; font-size: 14px; }
+.status { font-size: 13px; color: #94a3b8; }
+.status-offline { color: #f87171; }
