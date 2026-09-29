@@ -37,9 +37,10 @@ async def analyze_incident(
     payload: IncidentCreate,
     request: Request,
     use_memory: bool = Query(default=True, description="Set false to get a memory-less baseline answer"),
+    exclude_incident_id: int | None = Query(default=None, description="Hide this incident's own memory when replaying it"),
 ) -> AnalysisResponse:
     try:
-        return await service_for(request).analyze(payload, use_memory=use_memory)
+        return await service_for(request).analyze(payload, use_memory=use_memory, exclude_incident_id=exclude_incident_id)
     except AnalysisFailed as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

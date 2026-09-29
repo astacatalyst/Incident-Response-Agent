@@ -36,3 +36,13 @@ button, input, select { font-family: inherit; }
 .ask-form input { flex: 1; }
 .chip-btn { font-size: 12px; padding: 4px 10px; border-radius: 99px; }
 blockquote { margin: 6px 0; padding-left: 12px; border-left: 3px solid currentColor; opacity: .9; font-style: italic; }
+.score-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.score-delta { font-family: "Space Grotesk", sans-serif; font-size: 1.6rem; font-weight: 700; }
+.score-delta.up { color: #4ade80; } .score-delta.down { color: #f87171; }
+.score-card { padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.08); }
+.score-big { font-family: "Space Grotesk", sans-serif; font-size: 2.4rem; font-weight: 700; }
+.score-big small { font-size: 1rem; opacity: .6; }
+.score-row { display: grid; grid-template-columns: 1fr 90px 44px; gap: 8px; align-items: center; font-size: 13px; margin-top: 6px; }
+.score-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
+.score-bar div { height: 100%; background: #f5a524; }
+.score-card.after .score-bar div { background: #a78bfa; }

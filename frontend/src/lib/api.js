@@ -25,8 +25,8 @@ async function request(path, options = {}) {
   return data;
 }
 
-export const analyzeIncident = (payload) =>
-  request("/api/incidents/analyze", { method: "POST", body: JSON.stringify(payload) });
+export const analyzeIncident = (payload, excludeId) =>
+  request(`/api/incidents/analyze${excludeId ? `?exclude_incident_id=${excludeId}` : ""}`, { method: "POST", body: JSON.stringify(payload) });
 
 export const resolveIncident = (id, payload) =>
   request(`/api/incidents/${id}/resolve`, { method: "POST", body: JSON.stringify(payload) });

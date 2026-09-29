@@ -40,7 +40,7 @@ class IncidentService:
         self.memory = memory
         self.agent = agent
 
-    async def analyze(self, request: IncidentCreate, use_memory: bool = True) -> AnalysisResponse:
+    async def analyze(self, request: IncidentCreate, use_memory: bool = True, exclude_incident_id: int | None = None) -> AnalysisResponse:
         request_id = str(uuid4())
         started = time.perf_counter()
 
@@ -54,6 +54,15 @@ class IncidentService:
 
         if use_memory:
             memories, memory_status, memory_error = await self.memory.recall(incident)
+            if exclude_incident_id is not None:
+                # Replaying a past incident: hide its own memory so the comparison stays honest.
+                marker = str(exclude_incident_id)
+                memories = [
+                    m for m in memories
+                    if str((m.get("metadata") or {}).get("incident_id", "")) != marker
+                    and m.get("document_id") != f"incident-{marker}"
+                    and f'"incident_id": {marker},' not in str(m.get("content", ""))
+                ]
         else:
             # Baseline mode for the before/after demo: skip Hindsight recall entirely.
             memories, memory_status, memory_error = [], "ok", None
