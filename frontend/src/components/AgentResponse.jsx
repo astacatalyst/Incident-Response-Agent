@@ -1,6 +1,6 @@
 import MemoryTimeline from "./MemoryTimeline";
 
-function AgentResponse({ result }) {
+function AgentResponse({ result, hideMemory = false }) {
   const { analysis, memory, incident } = result;
   return (
     <div>
@@ -31,7 +31,7 @@ function AgentResponse({ result }) {
         )}
       </div>
 
-      <MemoryTimeline memory={memory} similar={analysis.similar_incidents} />
+      {!hideMemory && <MemoryTimeline memory={memory} similar={analysis.similar_incidents} />}
     </div>
   );
 }

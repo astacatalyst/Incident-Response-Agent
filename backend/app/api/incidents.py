@@ -33,9 +33,13 @@ def service_for(request: Request):
     status_code=status.HTTP_201_CREATED,
     summary="Persist and analyze a new incident",
 )
-async def analyze_incident(payload: IncidentCreate, request: Request) -> AnalysisResponse:
+async def analyze_incident(
+    payload: IncidentCreate,
+    request: Request,
+    use_memory: bool = Query(default=True, description="Set false to get a memory-less baseline answer"),
+) -> AnalysisResponse:
     try:
-        return await service_for(request).analyze(payload)
+        return await service_for(request).analyze(payload, use_memory=use_memory)
     except AnalysisFailed as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

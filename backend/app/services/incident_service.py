@@ -40,7 +40,7 @@ class IncidentService:
         self.memory = memory
         self.agent = agent
 
-    async def analyze(self, request: IncidentCreate) -> AnalysisResponse:
+    async def analyze(self, request: IncidentCreate, use_memory: bool = True) -> AnalysisResponse:
         request_id = str(uuid4())
         started = time.perf_counter()
 
@@ -52,7 +52,11 @@ class IncidentService:
             }
         )
 
-        memories, memory_status, memory_error = await self.memory.recall(incident)
+        if use_memory:
+            memories, memory_status, memory_error = await self.memory.recall(incident)
+        else:
+            # Baseline mode for the before/after demo: skip Hindsight recall entirely.
+            memories, memory_status, memory_error = [], "ok", None
 
         logger.info(
             "incident_analysis request_id=%s incident_id=%s "

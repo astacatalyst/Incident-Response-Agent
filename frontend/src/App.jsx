@@ -1,32 +1,25 @@
 import "./states.css";
 import { useEffect, useState } from "react";
-import IncidentInput from "./components/IncidentInput";
-import AgentResponse from "./components/AgentResponse";
-import ResolveForm from "./components/ResolveForm";
-import { analyzeIncident, getHealth } from "./lib/api";
+import RespondView from "./views/RespondView";
+import CompareView from "./views/CompareView";
+import HistoryView from "./views/HistoryView";
+import DashboardView from "./views/DashboardView";
+import { getHealth } from "./lib/api";
+
+const TABS = [
+  ["compare", "Before / After demo"],
+  ["respond", "Respond to incident"],
+  ["history", "Incident history"],
+  ["memory", "Memory dashboard"],
+];
 
 function App() {
-  const [result, setResult] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [tab, setTab] = useState("compare");
   const [health, setHealth] = useState(null);
 
   useEffect(() => {
     getHealth().then(setHealth).catch(() => setHealth({ status: "offline" }));
   }, []);
-
-  async function handleSubmit(payload) {
-    setResult(null);
-    setError("");
-    setIsLoading(true);
-    try {
-      setResult(await analyzeIncident(payload));
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   return (
     <div className="app">
@@ -38,18 +31,17 @@ function App() {
           {health.hindsight && ` · Memory: ${health.hindsight} · LLM: ${health.llm}`}
         </p>
       )}
-
-      <IncidentInput onSubmit={handleSubmit} isLoading={isLoading} />
-
-      {isLoading && <div className="loading">Searching memory for similar incidents...</div>}
-      {error && <div className="error">{error}</div>}
-
-      {result && (
-        <>
-          <AgentResponse result={result} />
-          <ResolveForm incident={result.incident} />
-        </>
-      )}
+      <nav className="tabs">
+        {TABS.map(([id, label]) => (
+          <button key={id} className={tab === id ? "tab active" : "tab"} onClick={() => setTab(id)}>
+            {label}
+          </button>
+        ))}
+      </nav>
+      {tab === "compare" && <CompareView />}
+      {tab === "respond" && <RespondView />}
+      {tab === "history" && <HistoryView />}
+      {tab === "memory" && <DashboardView />}
     </div>
   );
 }

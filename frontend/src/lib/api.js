@@ -32,3 +32,13 @@ export const resolveIncident = (id, payload) =>
   request(`/api/incidents/${id}/resolve`, { method: "POST", body: JSON.stringify(payload) });
 
 export const getHealth = () => request("/health");
+
+export const analyzeWithoutMemory = (payload) =>
+  request("/api/incidents/analyze?use_memory=false", { method: "POST", body: JSON.stringify(payload) });
+
+export const listIncidents = (params = {}) => {
+  const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== "" && v != null));
+  return request(`/api/incidents?${q}`);
+};
+
+export const getMemoryDashboard = () => request("/api/memory");

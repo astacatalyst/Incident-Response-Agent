@@ -6,3 +6,30 @@ label input, label select, label textarea { display: block; width: 100%; margin-
 .muted { color: #94a3b8; font-size: 14px; }
 .status { font-size: 13px; color: #94a3b8; }
 .status-offline { color: #f87171; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 20px; }
+.tab { margin: 0; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; }
+.tab.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+button.secondary { background: #334155; }
+.app:has(.compare) { max-width: 1200px; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 800px) { .compare { grid-template-columns: 1fr; } }
+.col-title { font-size: 16px; padding: 8px 12px; border-radius: 8px; margin: 0 0 12px; }
+.col-title.before { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+.col-title.after { background: rgba(167, 139, 250, 0.18); color: #ddd6fe; }
+.memory-panel { border-color: #a78bfa; }
+.scores { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.score { font-size: 12px; font-family: Consolas, monospace; background: rgba(167, 139, 250, 0.15); color: #ddd6fe; padding: 2px 8px; border-radius: 999px; }
+.row, .row-static { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.row { width: 100%; background: none; padding: 0; margin: 0; color: inherit; text-align: left; }
+.row:hover { background: none; }
+.right { margin-left: auto; }
+.sev-critical { background: rgba(248, 113, 113, 0.2) !important; color: #fecaca !important; }
+.sev-high { background: rgba(251, 146, 60, 0.2) !important; color: #fed7aa !important; }
+.logs { white-space: pre-wrap; font-size: 12px; background: #0f172a; padding: 10px; border-radius: 8px; overflow-x: auto; }
+.pager { display: flex; align-items: center; gap: 12px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px; }
+.stat-value { font-size: 26px; font-weight: 700; color: #ddd6fe; }
+.bar-row { display: grid; grid-template-columns: 2fr 3fr auto; gap: 10px; align-items: center; margin: 6px 0; font-size: 14px; }
+.bar { background: #0f172a; border-radius: 999px; height: 10px; }
+.bar-fill { background: #a78bfa; height: 100%; border-radius: 999px; }

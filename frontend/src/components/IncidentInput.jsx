@@ -9,7 +9,16 @@ const initial = {
   description: "",
 };
 
-function IncidentInput({ onSubmit, isLoading }) {
+export const EXAMPLE = {
+  service: "payments-service",
+  severity: "critical",
+  symptoms: "checkout 5xx errors, p99 latency above 4s, DB connection timeouts",
+  deployment_version: "v3.2.0",
+  logs: "ERROR [payments-service] psycopg2.OperationalError: could not obtain connection from pool (timeout=30s)\nWARN pool size 20/20 in use, 148 waiting\nERROR POST /api/checkout 503 Service Unavailable",
+  description: "Checkout failing for most users right after the v3.2.0 deploy during peak traffic.",
+};
+
+function IncidentInput({ onSubmit, isLoading, submitLabel = "Analyze incident" }) {
   const [form, setForm] = useState(initial);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -48,8 +57,11 @@ function IncidentInput({ onSubmit, isLoading }) {
       <label>Description (optional)
         <textarea rows={2} value={form.description} onChange={set("description")} />
       </label>
+      <button className="secondary" type="button" onClick={() => setForm(EXAMPLE)} disabled={isLoading}>
+        Load example
+      </button>{" "}
       <button onClick={submit} disabled={isLoading || !valid}>
-        {isLoading ? "Analyzing..." : "Analyze incident"}
+        {isLoading ? "Analyzing..." : submitLabel}
       </button>
     </div>
   );
