@@ -1,0 +1,31 @@
+:root {
+  --bg: #0b1020; --surface: #121a2e; --surface-2: #0e1526; --line: #22304d;
+  --text: #e6ebf5; --muted: #8a97b3; --accent: #f59e0b; --memory: #a78bfa; --ok: #34d399; --bad: #f87171;
+}
+body { background: radial-gradient(1200px 600px at 80% -10%, rgba(167,139,250,0.12), transparent 60%), var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; }
+h1, h2, h3, .stat-value, .brand { font-family: "Space Grotesk", sans-serif; letter-spacing: -0.01em; }
+textarea, pre, .logs, .score, code { font-family: "JetBrains Mono", Consolas, monospace; }
+.app { max-width: 1000px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; }
+.brand-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--memory)); display: grid; place-items: center; color: var(--bg); font-size: 16px; }
+.app .subtitle { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.dot.bad { background: var(--bad); }
+.card, .stat { background: var(--surface); border-color: var(--line); border-radius: 14px; }
+.memory-card { background: var(--surface-2); border-left-color: var(--memory); border-radius: 8px; }
+.memory-panel { border-color: rgba(167,139,250,0.5); box-shadow: 0 0 0 1px rgba(167,139,250,0.15), 0 10px 40px -20px rgba(167,139,250,0.5); }
+button { background: var(--accent); color: #1a1205; font-weight: 600; }
+button:hover { background: #fbbf24; }
+button.secondary, .tab { background: var(--surface); color: var(--text); border: 1px solid var(--line); }
+.tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.col-title.after { background: rgba(167,139,250,0.18); }
+.stat-value { color: var(--text); }
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0 0; }
+.strip .stat { padding: 10px 14px; }
+.strip .stat-value { font-size: 20px; }
+html, body { min-height: 100%; }
+body { background-attachment: fixed; }
+button, input, select { font-family: inherit; }

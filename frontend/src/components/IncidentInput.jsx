@@ -18,8 +18,8 @@ export const EXAMPLE = {
   description: "Checkout failing for most users right after the v3.2.0 deploy during peak traffic.",
 };
 
-function IncidentInput({ onSubmit, isLoading, submitLabel = "Analyze incident" }) {
-  const [form, setForm] = useState(initial);
+function IncidentInput({ onSubmit, isLoading, submitLabel = "Analyze incident", prefill = false }) {
+  const [form, setForm] = useState(prefill ? EXAMPLE : initial);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const symptoms = form.symptoms.split(/[,\n]/).map((s) => s.trim()).filter(Boolean);

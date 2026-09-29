@@ -26,10 +26,10 @@ function CompareView() {
         <h2>Same incident, two answers</h2>
         <p className="muted">
           One incident goes to the agent twice: once with memory switched off, and once with experience
-          recalled from Hindsight. Click “Load example” for a payments outage that looks like past incidents.
+          recalled from Hindsight. A payments outage resembling past incidents is already filled in — press “Compare answers”.
         </p>
       </div>
-      <IncidentInput onSubmit={run} isLoading={state.loading} submitLabel="Compare answers" />
+      <IncidentInput onSubmit={run} isLoading={state.loading} submitLabel="Compare answers" prefill />
       {state.loading && <div className="loading">Running both analyses...</div>}
       {state.error && <div className="error">{state.error}</div>}
       {(state.before || state.after) && (

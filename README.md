@@ -1,12 +1,56 @@
-# IncidentIQ Backend
+# IncidentIQ
 
 IncidentIQ is an AI-powered incident-response backend for software and DevOps
 teams. It stores incident history in SQLite, recalls relevant operational
 experience from Hindsight, sends the current incident plus that actual memory
 to Groq, and validates the resulting investigation with Pydantic.
 
-This repository intentionally contains backend code only. It does not include
-React, CSS, frontend routing, or dashboard UI.
+The repository has two parts: a FastAPI backend (`backend/`) and a React
+dashboard (`frontend/`). The dashboard has four screens: a before/after
+comparison, incident response with resolution, incident history, and a
+memory dashboard.
+
+Live demo: https://incident-response-agent-puce.vercel.app/
+
+## How the Hindsight memory flow works
+
+```text
+ 1. New incident ──► POST /api/incidents/analyze
+ 2.   saved to SQLite (status: open)
+ 3.   recall ──► Hindsight: "service + symptoms + logs + version" query
+ 4.   recalled memories + incident ──► Groq ──► structured analysis
+ 5.   UI shows the answer AND every recalled memory (scores, dates, source incident)
+ 6. Engineer fixes it ──► POST /api/incidents/{id}/resolve
+ 7.   root cause, fix, outcome, minutes, lessons saved to SQLite
+ 8.   retain ──► Hindsight stores the whole experience, tagged by service/severity
+ 9. Next similar incident ──► step 3 now returns this experience
+```
+
+- **Recall happens before every analysis.** The prompt contains only memories
+  Hindsight actually returned, so the agent can't cite history it didn't get.
+- **Retain happens only after a human resolves the incident,** so memory holds
+  confirmed outcomes, failed fixes included (`successful: false`), not guesses.
+- **Nothing is hidden.** Every analysis response includes a `memory` block
+  (status, count, raw records with scores) that the UI renders.
+- **Baseline mode.** `POST /api/incidents/analyze?use_memory=false` skips
+  recall. The Before/After screen calls both versions side by side, so you can
+  see the difference memory makes on the same incident.
+- **Dashboard.** `GET /api/memory` returns incident counts, recurring root
+  causes, recent lessons, and Hindsight bank stats.
+
+### Demo in 60 seconds
+1. Open **Before / After demo**. A payments outage is already filled in. Press **Compare answers**.
+2. The left answer (no memory) is generic. The right answer names past incidents, their fixes, and the lessons learned.
+3. Go to **Respond to incident**, analyze a new incident, and resolve it with the resolve form.
+4. Submit a similar incident. The fix you just entered now shows up in recalled memory.
+
+## Deploying
+
+- **Backend (Render):** New → Blueprint → this repo (uses `render.yaml`). Set
+  `HINDSIGHT_API_URL`, `HINDSIGHT_API_KEY`, `HINDSIGHT_BANK_ID`, `GROQ_API_KEY`.
+  The container seeds 25 synthetic incidents into SQLite on start. Run
+  `python -m scripts.seed_hindsight` once (Render Shell) to load them into Hindsight.
+- **Frontend (Vercel):** root `frontend/`, env `VITE_API_URL=<render URL>`.
 
 ## Why persistent memory matters
 
