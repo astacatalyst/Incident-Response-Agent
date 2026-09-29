@@ -94,3 +94,35 @@ def get_incident(incident_id: int, request: Request) -> IncidentRead:
         return service_for(request).get_incident(incident_id)
     except IncidentNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+from pydantic import BaseModel, Field as _Field
+
+
+class AskRequest(BaseModel):
+    question: str = _Field(min_length=3, max_length=500)
+
+
+@router.post("/ask", summary="Ask a natural-language question about past incidents")
+async def ask_incidents(payload: AskRequest, request: Request) -> dict:
+    from sqlalchemy import select
+
+    from backend.app.db.models import Incident
+    from backend.app.services.ask_service import AskFailed, ask_gateway, retrieve
+
+    incidents = list(request.state.session.scalars(select(Incident)))
+    records = retrieve(incidents, payload.question)
+    memories, memory_status = [], "skipped"
+    try:
+        recall = await request.app.state.hindsight.recall(payload.question)
+        memories, memory_status = recall.memories, "ok"
+    except Exception:
+        memory_status = "unavailable"
+    if not records and not memories:
+        return {"question": payload.question, "answer": "No past incidents match this question yet.",
+                "confidence": "low", "evidence": [], "follow_up": None, "sources": [], "memory_status": memory_status}
+    try:
+        result = await ask_gateway(payload.question, records, memories)
+    except AskFailed as exc:
+        raise HTTPException(status_code=exc.status, detail={"code": "ask_failed", "message": str(exc)}) from exc
+    return {"question": payload.question, **result, "sources": records, "memory_status": memory_status,
+            "memories_used": len(memories)}

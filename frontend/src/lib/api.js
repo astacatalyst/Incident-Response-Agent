@@ -42,3 +42,6 @@ export const listIncidents = (params = {}) => {
 };
 
 export const getMemoryDashboard = () => request("/api/memory");
+
+export const askIncidents = (question) =>
+  request("/api/incidents/ask", { method: "POST", body: JSON.stringify({ question }) });

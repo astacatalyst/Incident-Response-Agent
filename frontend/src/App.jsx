@@ -5,6 +5,7 @@ import RespondView from "./views/RespondView";
 import CompareView from "./views/CompareView";
 import HistoryView from "./views/HistoryView";
 import DashboardView from "./views/DashboardView";
+import AskView from "./views/AskView";
 import { getHealth, getMemoryDashboard } from "./lib/api";
 
 const TABS = [
@@ -12,6 +13,7 @@ const TABS = [
   ["respond", "Respond to incident"],
   ["history", "Incident history"],
   ["memory", "Memory dashboard"],
+  ["ask", "Ask past incidents"],
 ];
 
 function App() {
@@ -58,6 +60,7 @@ function App() {
       {tab === "respond" && <RespondView />}
       {tab === "history" && <HistoryView />}
       {tab === "memory" && <DashboardView />}
+      {tab === "ask" && <AskView />}
     </div>
   );
 }

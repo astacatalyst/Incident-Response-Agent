@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { listIncidents } from "../lib/api";
 import ResolveForm from "../components/ResolveForm";
 import { formatDate } from "../lib/format";
+import { exportPostmortems } from "../lib/postmortem";
 
 function HistoryView() {
   const [filters, setFilters] = useState({ service: "", severity: "", status: "", page: 1 });
@@ -9,6 +10,25 @@ function HistoryView() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function exportAll(format) {
+    setExporting(true);
+    setError("");
+    try {
+      const all = [];
+      for (let page = 1; ; page++) {
+        const d = await listIncidents({ ...filters, status: "resolved", page, page_size: 100 });
+        all.push(...d.items);
+        if (page >= (d.pages || 1)) break;
+      }
+      if (!exportPostmortems(all, format)) setError("No resolved incidents match these filters.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -42,6 +62,12 @@ function HistoryView() {
             </select>
           </label>
         </div>
+        <div className="export-bar">
+          <span className="muted">Export resolved incidents matching these filters as postmortem reports:</span>
+          <button disabled={exporting} onClick={() => exportAll("pdf")}>{exporting ? "Preparing…" : "PDF"}</button>
+          <button disabled={exporting} onClick={() => exportAll("html")}>HTML</button>
+          <button disabled={exporting} onClick={() => exportAll("md")}>Markdown</button>
+        </div>
       </div>
       {error && <div className="error">{error}</div>}
       {loading && !data && <div className="loading">Loading incidents...</div>}
@@ -69,6 +95,12 @@ function HistoryView() {
                       <p><strong>Resolution:</strong> {i.resolution}</p>
                       <p><strong>Outcome:</strong> {i.successful ? "worked" : "did not work"} · {i.resolution_time_minutes} min</p>
                       <p><strong>Lessons:</strong> {i.lessons_learned}</p>
+                      <div className="export-bar">
+                        <span className="muted">Postmortem report:</span>
+                        <button onClick={() => exportPostmortems([i], "pdf")}>PDF</button>
+                        <button onClick={() => exportPostmortems([i], "html")}>HTML</button>
+                        <button onClick={() => exportPostmortems([i], "md")}>Markdown</button>
+                      </div>
                     </>
                   ) : (
                     <ResolveForm incident={i} />

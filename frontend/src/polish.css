@@ -29,3 +29,10 @@ button.secondary, .tab { background: var(--surface); color: var(--text); border:
 html, body { min-height: 100%; }
 body { background-attachment: fixed; }
 button, input, select { font-family: inherit; }
+
+.export-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+.export-bar button { padding: 6px 12px; font-size: 13px; }
+.ask-form { display: flex; gap: 8px; margin-top: 10px; }
+.ask-form input { flex: 1; }
+.chip-btn { font-size: 12px; padding: 4px 10px; border-radius: 99px; }
+blockquote { margin: 6px 0; padding-left: 12px; border-left: 3px solid currentColor; opacity: .9; font-style: italic; }

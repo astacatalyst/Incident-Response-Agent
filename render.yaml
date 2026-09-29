@@ -16,5 +16,7 @@ services:
         sync: false
       - key: HINDSIGHT_BANK_ID
         sync: false
+      - key: LOVABLE_API_KEY
+        sync: false
       - key: GROQ_API_KEY
         sync: false
